@@ -63,8 +63,8 @@ HIV_expr <- function(X, y,
             ynew <- rnorm(2 * p - n) * sigma
             X <- rbind(X, Xnew)
             y <- c(y, ynew)
+            print("n < 2p. Approximated knockoff is used.")
         }
-        print("n < 2p. Approximate knockoff is used.")
         Xk_equi <- knockoff::create.fixed(X, "equi")$Xk
         Xk_sdp <- knockoff::create.fixed(X, "sdp")$Xk
     }
@@ -175,7 +175,7 @@ skip_knockoff <- FALSE
 skip_dBH2 <- FALSE
 res <- list()
 
-for (drug_class in names(data)[-1]){
+for (drug_class in names(data)){
     Y <- data[[drug_class]]$Y
     X <- data[[drug_class]]$X
     res[[drug_class]] <- lapply(1:length(Y), function(j){
