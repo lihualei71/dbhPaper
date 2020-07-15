@@ -30,9 +30,9 @@ plot_Rcurve(Rcurves_safe$BH,
             avals = Rcurves_safe$avals,
             cols = c("red", "blue", "orange"),
             ltys = c(1, 2, 4),
-            xlim = c(0, 40 * Rcurves_safe$alpha / n),
-            ylim = c(0.02, 0.05),
+            xlim = c(0, 4 * Rcurves_safe$alpha / n),
+            ylim = c(0.02, 1),
             labels = c(expression("BH"(alpha)),
-                       expression("dBH"[1](alpha)),
-                       expression("dBH"[1]^2*(alpha))))
+                       expression("dBH"[1/L[m]](alpha)),
+                       expression("dBH"[1/L[m]]^2*(alpha))))
 dev.off()
