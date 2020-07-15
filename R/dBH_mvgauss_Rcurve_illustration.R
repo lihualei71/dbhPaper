@@ -39,3 +39,4 @@ Rcurve_dBH2 <- Rcurve_mvgauss(id, zvals, Sigma, side, alpha,
 Rcurves <- list(BH = Rcurve_BH,
                 dBH = Rcurve_dBH,
                 dBH2 = Rcurve_dBH2)
+save(Rcurves, file = "../data/dBH_mvgauss_Rcurve.RData")
