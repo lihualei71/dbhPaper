@@ -5,26 +5,24 @@ source("compute_knots_mvgauss.R")
 
 dBH_mvgauss_qc <- function(zvals, Sigma,
                            side = c("right", "left", "two"),
-                           alpha = 0.05, alpha0 = NULL,
+                           alpha = 0.05, gamma = NULL,
                            avals = NULL, 
                            avals_type = c("BH", "geom", "bonf", "manual"),
-                           gamma = 2,
+                           beta = 2,
                            eps = 0.05,
-                           use_cap = TRUE,
-                           acc_multiplier = 2,
-                           acc_minrejs = 10){
+                           qcap = 2){
     side <- side[1]
     avals_type <- avals_type[1]
     n <- length(zvals)
     if (is.null(avals)){
         if (avals_type == "manual"){
             stop("avals must be inputted when avals_type = \"manual\"")
-        } else if (avals_type == "geom" && gamma <= 1){
-            stop("gamma must be larger than 1 when avals_type = \"geom\"")
+        } else if (avals_type == "geom" && beta <= 1){
+            stop("beta must be larger than 1 when avals_type = \"geom\"")
         }
         avals <- switch(avals_type,
                         BH = 1:n,
-                        geom = geom_avals(gamma, n),
+                        geom = geom_avals(beta, n),
                         bonf = 1)
     } else {
         if (avals[1] != 1){
@@ -34,12 +32,13 @@ dBH_mvgauss_qc <- function(zvals, Sigma,
         warning("avals is inputted and avals_type is set to be \"manual\" by default. This may slow down the code. Use the built-in avals_type (\"BH\", \"geom\" or \"bonf\") instead unless there is a good reason to use the inputted avals.")
     }
 
-    if (is.null(alpha0)){
-        alpha0 <- alpha / normalize(avals)
+    if (is.null(gamma)){
+        gamma <- 1 / normalize(avals)
         is_safe <- TRUE
     } else {
-        is_safe <- (alpha0 <= alpha / normalize(avals))
+        is_safe <- (gamma <= 1 / normalize(avals))
     }
+    alpha0 <- gamma * alpha
 
     if (any(diag(Sigma) != 1)){
         vars <- diag(Sigma)
@@ -56,8 +55,9 @@ dBH_mvgauss_qc <- function(zvals, Sigma,
     ntails <- ifelse(side == "two", 2, 1)    
     high <- qnorm(alpha * eps / n / ntails, lower.tail = FALSE)
     pvals <- zvals_pvals(zvals, side)
-    obj <- RBH_init(pvals, alpha, avals, alpha0, is_safe,
-                    use_cap, acc_multiplier, acc_minrejs)
+    qvals <- qvals_BH_reshape(pvals, avals)    
+    obj <- RBH_init(pvals, qvals, alpha, alpha0,
+                    avals, is_safe, qcap)
 
     if (length(obj$cand) == 0){
         return(list(rejs = obj$init_rejlist,
@@ -68,7 +68,6 @@ dBH_mvgauss_qc <- function(zvals, Sigma,
                     secBH = FALSE))
     }
 
-    qvals <- qvals_BH_reshape(pvals, avals)
     cand_info <- sapply(obj$cand, function(i){
         low <- qnorm(qvals[i] * max(avals) / n / ntails, lower.tail = FALSE)
         
@@ -83,7 +82,7 @@ dBH_mvgauss_qc <- function(zvals, Sigma,
             high = high,
             avals = avals,
             avals_type = avals_type,
-            gamma = gamma)
+            beta = beta)
         res_q <- lapply(res_q, function(re){
             RBH <- RejsBH(re$posit, re$sgn, re$RCV, avals)
             knots <- c(re$low, re$knots)
@@ -100,7 +99,7 @@ dBH_mvgauss_qc <- function(zvals, Sigma,
             if (avals_type == "BH"){
                 thra <- nrejs
             } else if (avals_type == "geom"){
-                thra <- find_ind_geom_avals(gamma, nrejs, "max")
+                thra <- find_ind_geom_avals(beta, nrejs, "max")
                 ## 0 rejection should return aval = 0
                 thra[thra == 0] <- NA
                 thra <- avals[thra]
@@ -129,7 +128,7 @@ dBH_mvgauss_qc <- function(zvals, Sigma,
             high = high,
             avals = avals,
             avals_type = avals_type,
-            gamma = gamma)
+            beta = beta)
         res_alpha0 <- lapply(res_alpha0, function(re){
             RBH <- RejsBH(re$posit, re$sgn, re$RCV, avals)
             knots <- c(re$low, re$knots)
@@ -146,7 +145,7 @@ dBH_mvgauss_qc <- function(zvals, Sigma,
             if (avals_type == "BH"){
                 thra <- nrejs
             } else if (avals_type == "geom"){
-                thra <- find_ind_geom_avals(gamma, nrejs, "max")
+                thra <- find_ind_geom_avals(beta, nrejs, "max")
                 ## 0 rejection should return aval = 0
                 thra[thra == 0] <- NA
                 thra <- avals[thra]

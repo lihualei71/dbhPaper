@@ -66,6 +66,9 @@ compute_RCV <- function(x, thresh, avals){
 
 compute_cond_exp <- function(stat, knots, nrejs, thr, dist){
     right_knots <- tail(knots, -1)
+    if (length(thr) != length(right_knots)){
+        browser()
+    }
     inds <- which(thr <= right_knots)
     left_knots <- knots[inds]
     left_knots <- pmax(thr[inds], left_knots)    
@@ -127,35 +130,24 @@ nrejs_BH <- function(pvals, alpha){
     max(0, which(adjust_pvals <= 1))
 }
 
-RBH_init <- function(pvals, alpha,
-                     avals = 1:length(pvals),
-                     alpha0 = NULL,
-                     is_safe = TRUE, use_cap = TRUE,
-                     acc_multiplier = 2, acc_minrejs = 10){
+RBH_init <- function(pvals, qvals, alpha, alpha0,
+                     avals, is_safe, qcap){
     n <- length(pvals)
     dBH_rej0 <- BH(pvals, alpha0, avals, FALSE)$rejs
     Rinit <- rep(length(dBH_rej0) + 1, n)
     Rinit[dBH_rej0] <- Rinit[dBH_rej0] - 1
-    
+
+    init_rejlist <- which(qvals <= alpha / max(avals))    
     if (is_safe){
-        init_rejlist <- dBH_rej0
-    } else {
-        init_rejlist <- integer(0)
+        init_rejlist <- union(dBH_rej0, init_rejlist)
     }
-
-    nrejs <- BH(pvals, alpha, avals, FALSE)$nrejs
-    if (use_cap){
-        maxp <- alpha / n * min(max(avals), max(acc_multiplier * nrejs, acc_minrejs))
-    } else {
-        maxp <- alpha / n * max(avals)
-    }
-    init_acclist <- which(pvals >= maxp)
-
+    init_acclist <- which(qvals >= qcap * alpha)
     cand <- 1:n
     tmp <- c(init_rejlist, init_acclist)
     if (length(tmp) > 0){
         cand <- cand[-tmp]
     }
+    
     return(list(Rinit = Rinit, cand = cand,
                 dBH_rej0 = dBH_rej0,
                 init_rejlist = init_rejlist,

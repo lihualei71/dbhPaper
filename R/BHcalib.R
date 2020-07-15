@@ -185,7 +185,7 @@ BH_mcc_calib <- function(ng, nr, pi1,
             mu <- c(mu_list[[i]] * mu1, 0)
             tmp <- null_zvals_list[[i]] + mu
             zvals <- rowMeans(tmp)
-            sigmahat <- sqrt(mean(rowMeans(tmp^2) - zvals^2))
+            sigmahat <- sqrt(mean(rowMeans(tmp^2) - zvals^2) * nr / (nr - 1))
             zvals <- head(zvals, -1) - tail(zvals, 1)
             zvals <- zvals * sqrt(nr / 2)
             tvals <- zvals / sigmahat

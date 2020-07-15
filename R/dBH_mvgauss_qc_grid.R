@@ -2,33 +2,30 @@ source("dBH_utils.R")
 
 dBH_mvgauss_qc_grid <- function(zvals, Sigma,
                                 side = c("right", "left", "two"),
-                                alpha = 0.05, alpha0 = NULL,
+                                alpha = 0.05, gamma = NULL,
                                 avals = NULL,
                                 avals_type = c("BH", "geom", "bonf", "manual"),
-                                gamma = 2,
+                                beta = 2,
                                 eps = 0.05,
-                                Rfun = dBH_mvgauss_qc,
-                                gridfun = lingrid,
+                                qcap = 2,
                                 gridsize = 20,
-                                if_thresh_expt = TRUE,
-                                thresh_expt = min(0.9 * alpha, 1.1 * alpha0),
-                                ...){
+                                exptcap = 0.9){
     side <- side[1]
     avals_type <- avals_type[1]
     n <- length(zvals)
     avals_obj <- list(avals = avals,
                       avals_type = avals_type,
-                      gamma = gamma)
+                      beta = beta)
 
     if (is.null(avals)){
         if (avals_type == "manual"){
             stop("avals must be inputted when avals_type = \"manual\"")
-        } else if (avals_type == "geom" && gamma <= 1){
-            stop("gamma must be larger than 1 when avals_type = \"geom\"")
+        } else if (avals_type == "geom" && beta <= 1){
+            stop("beta must be larger than 1 when avals_type = \"geom\"")
         }
         avals <- switch(avals_type,
                         BH = 1:n,
-                        geom = geom_avals(gamma, n),
+                        geom = geom_avals(beta, n),
                         bonf = 1)
     } else {
         if (avals[1] != 1){
@@ -38,8 +35,8 @@ dBH_mvgauss_qc_grid <- function(zvals, Sigma,
         warning("avals is inputted and avals_type is set to be \"manual\" by default. This may slow down the code. Use the built-in avals_type (\"BH\", \"geom\" or \"bonf\") instead unless there is a good reason to use the inputted avals.")
     }
 
-    if (is.null(alpha0)){
-        alpha0 <- alpha / normalize(avals)
+    if (is.null(gamma)){
+        gamma <- 1 / normalize(avals)
     }
 
     if (any(diag(Sigma) != 1)){
@@ -58,32 +55,27 @@ dBH_mvgauss_qc_grid <- function(zvals, Sigma,
     qvals <- qvals_BH_reshape(pvals, avals)
     
     params_root <- list(Sigma = Sigma, side = side,
-                        alpha = alpha, alpha0 = alpha0,
+                        alpha = alpha, gamma = gamma,
                         avals = avals_obj$avals,
                         avals_type = avals_obj$avals_type,
-                        gamma = avals_obj$gamma,
-                        eps = eps, ...)
+                        beta = avals_obj$beta,
+                        eps = eps,
+                        qcap = qcap)
     params <- c(params_root, list(zvals = zvals))
-    res_init <- do.call(Rfun, params)
+    res_init <- do.call(dBH_mvgauss_qc, params)
     Rinit <- rep(length(res_init$initrejs) + 1, n)
     Rinit[res_init$initrejs] <- Rinit[res_init$initrejs] - 1
 
     ntails <- ifelse(side == "two", 2, 1)
-    ## if (res_init$safe){
-    ##     low <- qnorm(alpha / ntails, lower.tail = FALSE)
-    ## } else {
-    ##     low <- 0
-    ## }
     high <- qnorm(alpha * eps / n / ntails, lower.tail = FALSE)
 
     cand <- res_init$cand
     if (res_init$safe){
         init_rejlist <- res_init$initrejs
     } else {
-        if (if_thresh_expt){
-            init_rejlist <- cand[res_init$expt <= thresh_expt]
-        } else {
-            init_rejlist <- integer(0)
+        init_rejlist <- which(qvals <= alpha / max(avals))
+        if (!is.null(exptcap)){
+            init_rejlist <- union(cand[res_init$expt <= exptcap * alpha], init_rejlist)
         }
     }
     cand <- setdiff(cand, init_rejlist)    
@@ -113,7 +105,7 @@ dBH_mvgauss_qc_grid <- function(zvals, Sigma,
             high = high,
             avals = avals,
             avals_type = avals_type,
-            gamma = gamma)
+            beta = beta)
         res_q <- lapply(res_q, function(re){
             RBH <- RejsBH(re$posit, re$sgn, re$RCV, avals)
             knots <- c(re$low, re$knots)
@@ -130,7 +122,7 @@ dBH_mvgauss_qc_grid <- function(zvals, Sigma,
             if (avals_type == "BH"){
                 thra <- nrejs
             } else if (avals_type == "geom"){
-                thra <- find_ind_geom_avals(gamma, nrejs, "max")
+                thra <- find_ind_geom_avals(beta, nrejs, "max")
                 ## 0 rejection should return aval = 0
                 thra[thra == 0] <- NA
                 thra <- avals[thra]
@@ -189,7 +181,7 @@ dBH_mvgauss_qc_grid <- function(zvals, Sigma,
                 zvals_tmp[i] <- tmp[1]
                 zvals_tmp[-i] <- tmp[-1]
                 params <- c(params_root, list(zvals = zvals_tmp))
-                res <- do.call(Rfun, params)
+                res <- do.call(dBH_mvgauss_qc, params)
                 nrejs <- length(res$initrejs) + !(i %in% res$initrejs)
                 return(pr / nrejs)
             })
