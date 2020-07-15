@@ -1,0 +1,15 @@
+1) What is low for GF
+
+2) change acc_XXX to qcap
+
+3) allow Sigmafun (for covariance) and var (for marginal variance)
+
+4) dBH_lm_lasso
+
+5) change thresh_bounds_mvt by comparing t* with tlo and thi
+
+6) change alpha0 into gamma
+
+7) change thresh_expt into 0.9 * alpha
+
+8) remove gridfun
