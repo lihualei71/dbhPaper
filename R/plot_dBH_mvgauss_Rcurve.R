@@ -1,4 +1,5 @@
 source("Rcurve.R")
+source("plot_Rcurve.R")
 
 id <- 20
 n <- 1000
@@ -27,19 +28,21 @@ Rcurve_dBH <- Rcurve_mvgauss(id, zvals, Sigma, side, alpha,
                              alpha0 = alpha,
                              avals_type = "BH",
                              low = low, high = high,
-                             niter = 1)
+                             niter = 1, gridsize = 100)
 
-Rcurve_dBH2 <- Rcurve_mvgauss(id, zvals, Sigma, side, alpha,
-                              alpha0 = alpha,
-                              avals_type = "BH",
-                              low = low, high = high,
-                              niter = 2)
+system.time(
+    Rcurve_dBH2 <- Rcurve_mvgauss(id, zvals, Sigma, side, alpha,
+                                  alpha0 = alpha,
+                                  avals_type = "BH",
+                                  low = low, high = high,
+                                  niter = 2, gridsize = 20)
+)
 
 plot_Rcurve(Rcurve_BH, Rcurve_dBH, Rcurve_dBH2,
             n = n, side = side, alpha = alpha, avals = 1:n,
             cols = c("red", "blue", "orange"),
             ltys = c(1, 2, 3),
-            xlim = c(0, 40), ylim = c(0.02, 0.05),
+            xlim = c(0, 40 * alpha / n), ylim = c(0.02, 0.05),
             labels = c(expression("BH"(alpha)),
                        expression("dBH"[1](alpha)),
                        expression("dBH"[1]^2*(alpha))))

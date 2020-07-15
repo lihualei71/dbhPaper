@@ -34,7 +34,8 @@ plot_Rcurve <- function(...,
                         ltys = NULL, refltys = NULL,
                         labels = NULL, reflabels = NULL,
                         title = ""){
-    rescale <- n / alpha    
+    ## rescale <- n / alpha
+    rescale <- 1
     ntails <- ifelse(side == "two", 2, 1)
     par(mfrow = c(1, ntails))
     res_list <- list(...)
@@ -60,7 +61,7 @@ plot_Rcurve <- function(...,
     })) * rescale
 
     for (j in 1:ntails){
-        refx <- fill_int(n, avals) / ntails
+        refx <- fill_int(n, avals) / ntails * alpha / n
         refy <- 1 / (1:n)
         if (j == 1){
             if (ntails == 2){
@@ -78,13 +79,14 @@ plot_Rcurve <- function(...,
             ylim <- c(0, 1)
         }
         plot(xlim, ylim, type = "n",
-             xlab = expression("Rescale p-value " (p %*% n / alpha)),
+             ## xlab = expression("Rescale p-value " (p %*% n / alpha)),
+             xlab = "p-value",
              ylab = "1 / R",
              main = main,
              xlim = xlim, ylim = ylim)
 
         for (i in 1:nobjs){
-            refx_discount <- refx * res_list[[i]]$alpha0 / alpha
+            refx_discount <- refx * rescale * res_list[[i]]$alpha0 / alpha
             lines(refx_discount, refy, type = "l", col = refcols[i], lty = refltys[i])
             res <- res_list[[i]][[j]]
             x <- rep(res$knots, each = 2)
