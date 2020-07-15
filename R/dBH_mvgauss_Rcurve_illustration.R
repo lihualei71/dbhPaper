@@ -34,9 +34,42 @@ Rcurve_dBH2 <- Rcurve_mvgauss(id, zvals, Sigma, side, alpha,
                               avals_type = "BH",
                               low = low, high = high,
                               niter = 2,
-                              gridsize = c(10, 20))
+                              gridsize = c(20, 10))
 
 Rcurves <- list(BH = Rcurve_BH,
                 dBH = Rcurve_dBH,
-                dBH2 = Rcurve_dBH2)
+                dBH2 = Rcurve_dBH2,
+                n = n,
+                side = side,
+                alpha = alpha,
+                avals = 1:n)
 save(Rcurves, file = "../data/dBH_mvgauss_Rcurve.RData")
+
+Ln <- sum(1 / (1:n))
+Rcurve_BH_safe <- Rcurve_mvgauss(id, zvals, Sigma, side, alpha,
+                                 alpha0 = alpha / Ln,
+                                 avals_type = "BH",
+                                 low = low, high = high,
+                                 niter = 0)
+
+Rcurve_dBH_safe <- Rcurve_mvgauss(id, zvals, Sigma, side, alpha,
+                                  alpha0 = alpha / Ln,
+                                  avals_type = "BH",
+                                  low = low, high = high,
+                                  niter = 1, gridsize = 100)
+
+Rcurve_dBH2_safe <- Rcurve_mvgauss(id, zvals, Sigma, side, alpha,
+                                   alpha0 = alpha / Ln,
+                                   avals_type = "BH",
+                                   low = low, high = high,
+                                   niter = 2,
+                                   gridsize = c(20, 10))
+
+Rcurves_safe <- list(BH = Rcurve_BH_safe,
+                     dBH = Rcurve_dBH_safe,
+                     dBH2 = Rcurve_dBH2_safe,
+                     n = n,
+                     side = side,
+                     alpha = alpha,
+                     avals = 1:n)
+save(Rcurves_safe, file = "../data/dBH_mvgauss_safe_Rcurve.RData")

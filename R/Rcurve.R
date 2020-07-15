@@ -118,16 +118,16 @@ Rcurve_mvgauss <- function(id, zvals, Sigma,
                             avals_type = avals_obj$avals_type,
                             gamma = avals_obj$gamma)
         knots <- seq(low, high,
-                     length.out = tail(gridsize, 1) + 1)
+                     length.out = gridsize[niter] + 1)
         knots_fun <- function(...){
             dBH_mvgauss(...,
                         niter = niter,
                         tautype = tautype,
-                        gridsize = gridsize[1])
+                        gridsize = gridsize[niter - 1])
         }
         
         res_alpha0 <- lapply(1:ntails, function(k){
-            nrejs <- sapply(2:(gridsize + 1), function(j){
+            nrejs <- sapply(2:(gridsize[niter] + 1), function(j){
                 tmp <- recover_stats_mvgauss(zvals[id], knots[j] * (-1)^(k-1), s, cor)
                 zvals_tmp <- rep(0, n)
                 zvals_tmp[id] <- tmp[1]
@@ -192,6 +192,7 @@ Rcurve_mvt <- function(id, zvals, Sigma, sigmahat, df,
         Sigma <- cov2cor(Sigma)
     }
     if (side == "left"){
+
         zvals <- -zvals
         side <- "one"
     } else if (side == "right"){
@@ -262,13 +263,17 @@ Rcurve_mvt <- function(id, zvals, Sigma, sigmahat, df,
                             avals = avals_obj$avals,
                             avals_type = avals_obj$avals_type,
                             gamma = avals_obj$gamma)
-        knots <- seq(low, high, length.out = gridsize + 1)
+        knots <- seq(low, high,
+                     length.out = gridsize[niter] + 1)
         knots_fun <- function(...){
-            dBH_mvt(..., niter = niter, tautype = tautype)
+            dBH_mvt(...,
+                    niter = niter,
+                    tautype = tautype,
+                    gridsize = gridsize[niter - 1])
         }
         
         res_alpha0 <- lapply(1:ntails, function(k){
-            nrejs <- sapply(2:(gridsize + 1), function(j){
+            nrejs <- sapply(2:(gridsize[niter] + 1), function(j){
                 tmp <- recover_stats_mvt(zvals[id], knots[j] * (-1)^(k-1), s, cor)
                 tvals_tmp <- rep(0, n)
                 tvals_tmp[id] <- tmp[1]

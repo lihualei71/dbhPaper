@@ -1,4 +1,3 @@
-source("Rcurve.R")
 source("utils.R")
 
 ## Plot of the 1/R curve as a function of the rescaled p-value
@@ -38,7 +37,7 @@ plot_Rcurve <- function(...,
     ## rescale <- n / alpha
     rescale <- 1
     ntails <- ifelse(side == "two", 2, 1)
-    par(mfrow = c(1, ntails), lwd = lwd)
+    par(mfrow = c(1, ntails))
     res_list <- list(...)
     nobjs <- length(res_list)
     if (is.null(cols)){
@@ -88,7 +87,7 @@ plot_Rcurve <- function(...,
 
         for (i in 1:nobjs){
             refx_discount <- refx * rescale * res_list[[i]]$alpha0 / alpha
-            lines(refx_discount, refy, type = "l", col = refcols[i], lty = refltys[i])
+            lines(refx_discount, refy, type = "l", col = refcols[i], lty = refltys[i], lwd = lwd)
             res <- res_list[[i]][[j]]
             x <- rep(res$knots, each = 2)
             m <- length(x)
@@ -96,11 +95,11 @@ plot_Rcurve <- function(...,
             x[seq(2, m, 2)] <- x[seq(1, m, 2)] + 1e-10
             x <- x[-c(1, m)] * rescale
             y <- rep(1 / res$nrejs, each = 2)
-            lines(x, y, col = cols[i], lty = ltys[i])
+            lines(x, y, col = cols[i], lty = ltys[i], lwd = lwd)
         }
 
         if (!is.null(labels)){
-            legend("topright", legend = labels, col = cols, lty = ltys, cex = 0.8, y.intersp = 1.5)
+            legend("topright", legend = labels, col = cols, lty = ltys, cex = 0.8, y.intersp = 1.5, lwd = lwd)
         }
     }
 }
