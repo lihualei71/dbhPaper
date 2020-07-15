@@ -33,11 +33,12 @@ plot_Rcurve <- function(...,
                         cols = NULL, refcols = NULL,
                         ltys = NULL, refltys = NULL,
                         labels = NULL, reflabels = NULL,
-                        title = ""){
+                        title = "",
+                        lwd = 2){
     ## rescale <- n / alpha
     rescale <- 1
     ntails <- ifelse(side == "two", 2, 1)
-    par(mfrow = c(1, ntails))
+    par(mfrow = c(1, ntails), lwd = lwd)
     res_list <- list(...)
     nobjs <- length(res_list)
     if (is.null(cols)){

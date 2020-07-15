@@ -117,9 +117,13 @@ Rcurve_mvgauss <- function(id, zvals, Sigma,
                             avals = avals_obj$avals,
                             avals_type = avals_obj$avals_type,
                             gamma = avals_obj$gamma)
-        knots <- seq(low, high, length.out = gridsize + 1)
+        knots <- seq(low, high,
+                     length.out = tail(gridsize, 1) + 1)
         knots_fun <- function(...){
-            dBH_mvgauss(..., niter = niter, tautype = tautype)
+            dBH_mvgauss(...,
+                        niter = niter,
+                        tautype = tautype,
+                        gridsize = gridsize[1])
         }
         
         res_alpha0 <- lapply(1:ntails, function(k){

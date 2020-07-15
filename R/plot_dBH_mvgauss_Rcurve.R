@@ -1,48 +1,16 @@
-source("Rcurve.R")
 source("plot_Rcurve.R")
 
-id <- 20
-n <- 1000
-alpha <- 0.05
-side <- "one"
-ntails <- ifelse(side == "two", 2, 1)
-
-set.seed(20200212)
-pi1 <- 0.1
-mu1 <- 2.5
-rho <- 0.8
-Sigma <- genSigma(n, rho, type = "AR")
-mu <- genmu(n, pi1, mu1, "fix")
-zvals <- mvtnorm::rmvnorm(1, mu, Sigma)
-zvals <- as.numeric(zvals)
-low <- qnorm(alpha / ntails, lower.tail = FALSE)
-high <- qnorm(alpha / n / ntails * 0.01, lower.tail = FALSE)
-
-Rcurve_BH <- Rcurve_mvgauss(id, zvals, Sigma, side, alpha,
-                            alpha0 = alpha,
-                            avals_type = "BH",
-                            low = low, high = high,
-                            niter = 0)
-
-Rcurve_dBH <- Rcurve_mvgauss(id, zvals, Sigma, side, alpha,
-                             alpha0 = alpha,
-                             avals_type = "BH",
-                             low = low, high = high,
-                             niter = 1, gridsize = 100)
-
-system.time(
-    Rcurve_dBH2 <- Rcurve_mvgauss(id, zvals, Sigma, side, alpha,
-                                  alpha0 = alpha,
-                                  avals_type = "BH",
-                                  low = low, high = high,
-                                  niter = 2, gridsize = 20)
-)
-
-plot_Rcurve(Rcurve_BH, Rcurve_dBH, Rcurve_dBH2,
+load("../data/dBH_mvgauss_Rcurve.RData")
+pdf("../figs/calibrate_gamma1.pdf", width = 5, height = 5)
+plot_Rcurve(Rcurves$Rcurve_BH,
+            Rcurves$Rcurve_dBH,
+            Rcurves$Rcurve_dBH2,
             n = n, side = side, alpha = alpha, avals = 1:n,
             cols = c("red", "blue", "orange"),
             ltys = c(1, 2, 3),
+            lwd = 2,
             xlim = c(0, 40 * alpha / n), ylim = c(0.02, 0.05),
             labels = c(expression("BH"(alpha)),
                        expression("dBH"[1](alpha)),
                        expression("dBH"[1]^2*(alpha))))
+dev.off()
