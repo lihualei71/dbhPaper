@@ -8,6 +8,6 @@ All R scripts are included in the folder `R/`. The bash files to submit jobs to 
 ## R scripts
 The folder `R/` contains all R scripts:
 
-- `dBH_mvgauss_`
+- `dBH_mvgauss.R`, `dBH_mvgauss_qc.R`, `dBH_mvgauss_qc_grid.R` implement the function for dBH and dBH$`^2`$
 ## Submitting jobs, Postprocessing results, and generating plots
 
