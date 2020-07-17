@@ -81,7 +81,8 @@ BH_mvt_calib <- function(n, df, pi1,
             mu <- mu_list[[i]] * mu1
             zvals <- null_zvals_list[[i]] + mu
             sigmahat <- sqrt(rchisq(1, df = df) / df)
-            pvals <- pvals_mvt(zvals, Sigma, sigmahat, df, side)
+            tvals <- zvals / sigmahat
+            pvals <- pvals_mvt(tvals, Sigma, df, side)
             rejs_BH <- BH(pvals, alpha, 1:n, FALSE)$rejs
             tmp <- FDPpower(rejs_BH, H0)
             tmp[2]
@@ -136,7 +137,8 @@ BH_lm_calib <- function(X, pi1,
             zvals <- Sigma %*% (t(X) %*% y)
             tmp <- as.numeric(t(y) %*% H %*% y)
             sigmahat <- sqrt((sum(y^2) - tmp) / df)
-            pvals <- pvals_mvt(zvals, Sigma, sigmahat, df, side)
+            tvals <- zvals / sigmahat
+            pvals <- pvals_mvt(tvals, Sigma, df, side)
             rejs_BH <- BH(pvals, alpha, 1:n, FALSE)$rejs
             tmp <- FDPpower(rejs_BH, H0)
             tmp[2]
@@ -189,7 +191,7 @@ BH_mcc_calib <- function(ng, nr, pi1,
             zvals <- head(zvals, -1) - tail(zvals, 1)
             zvals <- zvals * sqrt(nr / 2)
             tvals <- zvals / sigmahat
-            pvals <- pvals_mvt(zvals, Sigma, sigmahat, df, side)
+            pvals <- pvals_mvt(tvals, Sigma, df, side)
             rejs_BH <- BH(pvals, alpha, 1:ng, FALSE)$rejs
             tmp <- FDPpower(rejs_BH, H0)
             tmp[2]

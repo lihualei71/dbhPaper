@@ -201,7 +201,7 @@ dBH_mvgauss_expr <- function(n, mu1, pi1,
 
             ## Number of methods so far
             nBHBC <- length(obj)
-            
+
             ## dBH rejections
             for (j in 1:nrow(expr_params)){
                 fac <- expr_params[j, 1]
@@ -218,7 +218,10 @@ dBH_mvgauss_expr <- function(n, mu1, pi1,
                     gamma <- fac
                 }
                 rejs_dBH <- dBH_mvgauss(
-                    zvals, Sigma, side, alpha,
+                    zvals = zvals,
+                    Sigma = Sigma,
+                    side = side,
+                    alpha = alpha,
                     gamma = gamma, 
                     niter = 1,
                     tautype = type,
@@ -245,7 +248,10 @@ dBH_mvgauss_expr <- function(n, mu1, pi1,
                         gamma <- fac
                     }
                     rejs_dBH2 <- dBH_mvgauss(
-                        zvals, Sigma, side, alpha,
+                        zvals = zvals,
+                        Sigma = Sigma,
+                        side = side,
+                        alpha = alpha,
                         gamma = gamma, 
                         niter = 2,
                         tautype = type,
@@ -316,7 +322,8 @@ dBH_mvt_expr <- function(n, df, mu1, pi1,
         H0 <- mu == 0
         zvals <- as.numeric(mu + sqrtSigma %*% rnorm(n))
         sigmahat <- sqrt(rchisq(1, df = df) / df)
-        pvals <- pvals_mvt(zvals, Sigma, sigmahat, df, side)
+        tvals <- zvals / sigmahat
+        pvals <- pvals_mvt(tvals, Sigma, df, side)
 
         for (k in 1:nalphas){
             obj <- list()
@@ -357,8 +364,11 @@ dBH_mvt_expr <- function(n, df, mu1, pi1,
                     gamma <- fac
                 }
                 rejs_dBH <- dBH_mvt(
-                    zvals, Sigma, sigmahat, df,
-                    side, alpha,
+                    tvals = tvals,
+                    df = df,
+                    Sigma = Sigma,
+                    side = side,
+                    alpha = alpha,
                     gamma = gamma, 
                     niter = 1,
                     tautype = type,
@@ -385,8 +395,11 @@ dBH_mvt_expr <- function(n, df, mu1, pi1,
                         gamma <- fac
                     }
                     rejs_dBH2 <- dBH_mvt(
-                        zvals, Sigma, sigmahat, df,
-                        side, alpha,
+                        tvals = tvals,
+                        df = df,
+                        Sigma = Sigma,
+                        side = side,
+                        alpha = alpha,
                         gamma = gamma,
                         niter = 2,
                         tautype = type,
@@ -458,21 +471,22 @@ dBH_lm_expr <- function(X, mu1, pi1,
 
     pb <- txtProgressBar(style=3)
     for (i in 1:nreps){
-        beta <- genmu(p, pi1, 1, mu_posit_type, mu_size_type)
+        mu <- genmu(p, pi1, 1, mu_posit_type, mu_size_type)
         if (side == "right"){
-            beta <- abs(beta)
+            mu <- abs(mu)
         } else if (side == "left"){
-            beta <- -abs(beta)
+            mu <- -abs(mu)
         }
-        beta <- beta * mu1
-        H0 <- beta == 0
+        mu <- mu * mu1
+        H0 <- mu == 0
 
         eps <- rnorm(n)
-        y <- X %*% beta + eps
+        y <- X %*% mu + eps
         zvals <- Sigma %*% (t(X) %*% y)
         tmp <- as.numeric(t(y) %*% H %*% y)
         sigmahat <- sqrt((sum(y^2) - tmp) / df)
-        pvals <- pvals_mvt(zvals, Sigma, sigmahat, df, side)
+        tvals <- zvals / sigmahat
+        pvals <- pvals_mvt(tvals, Sigma, df, side)
 
         for (k in 1:nalphas){
             obj <- list()
@@ -503,7 +517,7 @@ dBH_lm_expr <- function(X, mu1, pi1,
             
             ## Number of methods so far
             nBHBCkn <- length(obj)
-            
+
             ## dBH rejections
             for (j in 1:nrow(expr_params)){
                 fac <- expr_params[j, 1]
@@ -515,14 +529,17 @@ dBH_lm_expr <- function(X, mu1, pi1,
                     avals_type <- "geom"
                 }
                 if (is.na(fac)){
-                    alpha0 <- NULL
+                    gamma <- NULL
                 } else {
-                    alpha0 <- fac * alpha
+                    gamma <- fac
                 }
                 rejs_dBH <- dBH_mvt(
-                    zvals, Sigma, sigmahat, df,
-                    side, alpha,
-                    alpha0 = alpha0, 
+                    tvals = tvals,
+                    df = df,
+                    Sigma = Sigma,
+                    side = side,
+                    alpha = alpha,
+                    gamma = gamma, 
                     niter = 1,
                     tautype = type,
                     avals_type = avals_type,
@@ -543,14 +560,17 @@ dBH_lm_expr <- function(X, mu1, pi1,
                         avals_type <- "geom"
                     }
                     if (is.na(fac)){
-                        alpha0 <- NULL
+                        gamma <- NULL
                     } else {
-                        alpha0 <- fac * alpha
+                        gamma <- fac
                     }
                     rejs_dBH2 <- dBH_mvt(
-                        zvals, Sigma, sigmahat, df,
-                        side, alpha,
-                        alpha0 = alpha0,
+                        tvals = tvals,
+                        df = df,
+                        Sigma = Sigma,
+                        side = side,
+                        alpha = alpha,
+                        gamma = gamma,
                         niter = 2,
                         tautype = type,
                         avals_type = avals_type,
@@ -634,7 +654,7 @@ dBH_mcc_expr <- function(ng, nr,
         zvals <- head(zvals, -1) - tail(zvals, 1)
         zvals <- zvals * sqrt(nr / 2)
         tvals <- zvals / sigmahat
-        pvals <- pvals_mvt(zvals, Sigma, sigmahat, df, side)
+        pvals <- pvals_mvt(tvals, Sigma, df, side)
 
         for (k in 1:nalphas){
             obj <- list()
@@ -678,15 +698,17 @@ dBH_mcc_expr <- function(ng, nr,
                     avals_type <- "geom"
                 }
                 if (is.na(fac)){
-                    alpha0 <- NULL
+                    gamma <- NULL
                 } else {
-                    alpha0 <- fac * alpha
+                    gamma <- fac
                 }
                 rejs_dBH <- dBH_mvt(
-                    zvals, Sigma,
-                    sigmahat, df,
-                    side, alpha,
-                    alpha0 = alpha0, 
+                    tvals = tvals,
+                    df = df,
+                    Sigma = Sigma,
+                    side = side,
+                    alpha = alpha,
+                    gamma = gamma, 
                     niter = 1,
                     tautype = type,
                     avals_type = avals_type,
@@ -707,15 +729,18 @@ dBH_mcc_expr <- function(ng, nr,
                         avals_type <- "geom"
                     }
                     if (is.na(fac)){
-                        alpha0 <- NULL
+                        gamma <- NULL
                     } else {
-                        alpha0 <- fac * alpha
+                        gamma <- fac
                     }
                     rejs_dBH2 <- dBH_mvt(
-                        zvals, Sigma,
-                        sigmahat, df,
-                        side, alpha,
-                        alpha0 = alpha0,
+                        tvals = tvals,
+                        sigmahat = sigmahat,
+                        df = df,
+                        Sigma = Sigma,
+                        side = side,
+                        alpha = alpha,
+                        gamma = gamma,
                         niter = 2,
                         tautype = type,
                         avals_type = avals_type,

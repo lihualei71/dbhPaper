@@ -35,15 +35,15 @@ if (!interactive()){
     seed <- args$seed
     Xseed <- args$Xseed
 } else {
-    n <- 105
+    n <- 150
     p <- 100
-    pi1 <- 0.3
-    mu_type <- 2
-    nreps <- 50
-    side <- "two"
-    skip_dBH2 <- TRUE
+    pi1 <- 0.1
+    mu_type <- 1
+    nreps <- 5
+    side <- "right"
+    skip_dBH2 <- FALSE
     skip_knockoff <- FALSE
-    seed <- 601
+    seed <- 0
     Xseed <- 2020
 }
 
@@ -58,12 +58,8 @@ file_root <- paste0("../cluster_raw_data/dBH_lm",
                     "_knockoff", !skip_knockoff,
                     "_seed", seed,
 		    "_Xseed", Xseed)
-if (side == "two"){
-    alpha_fac <- c(0.8, NA)
-} else {
-    alpha_fac <- c(1, 0.8, NA)
-}
-gamma <- c(NA, 2)
+gamma <- c(0.9, NA)
+beta <- c(NA, 2)
 alphas <- c(0.05, 0.2)
 tautype <- "QC"
 
@@ -98,8 +94,8 @@ res <- dBH_lm_expr(X, mu1$ARplus_fix, pi1,
                    mu_posit_type, mu_type,
                    side,
                    alphas, nreps,
-                   alpha_fac = alpha_fac,
                    gamma = gamma,
+                   beta = beta,
                    skip_knockoff = skip_knockoff,
                    skip_dBH2 = skip_dBH2)
 print(postprocess(res))
@@ -123,8 +119,8 @@ res <- dBH_lm_expr(X, mu1$iid_fix, pi1,
                    mu_posit_type, mu_type,
                    side,
                    alphas, nreps,
-                   alpha_fac = alpha_fac,
                    gamma = gamma,
+                   beta = beta,
                    skip_knockoff = skip_knockoff,
                    skip_dBH2 = skip_dBH2)
 print(postprocess(res))
@@ -148,8 +144,8 @@ res <- dBH_lm_expr(X, mu1$block_fix, pi1,
                    mu_posit_type, mu_type,
                    side,
                    alphas, nreps,
-                   alpha_fac = alpha_fac,
                    gamma = gamma,
+                   beta = beta,
                    skip_knockoff = skip_knockoff,
                    skip_dBH2 = skip_dBH2)
 print(postprocess(res))

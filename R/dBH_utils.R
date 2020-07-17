@@ -203,7 +203,7 @@ lingrid <- function(low, high, gridsize, side){
     return(grid)
 }
 
-lm_mvt <- function(y, X){
+lm_mvt <- function(y, X, subset){
     n <- nrow(X)
     p <- ncol(X)
     df <- n - p
@@ -211,7 +211,8 @@ lm_mvt <- function(y, X){
     zvals <- as.numeric(coefficients(fit))
     Sigma <- solve(t(X) %*% X)
     sigmahat <- summary(fit)$sigma
-    list(zvals = zvals, Sigma = Sigma,
-         sigmahat = sigmahat, df = df)
+    tvals <- zvals / sigmahat
+    list(tvals = tvals[subset], df = df,
+         Sigma = Sigma[subset, subset])
 }
 

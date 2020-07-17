@@ -11,14 +11,13 @@ pvals_mvgauss <- function(zvals, Sigma, side){
     zvals_pvals(zvals, side)
 }
 
-pvals_mvt <- function(zvals, Sigma, sigmahat, df, side){
-    zvals <- zvals / sqrt(diag(Sigma))
-    tvals <- zvals / sigmahat
+pvals_mvt <- function(tvals, Sigma, df, side){
+    tvals <- tvals / sqrt(diag(Sigma))
     if (side == "right"){
         side <- "one"
     } else if (side == "left"){
         side <- "one"
-        zvals <- -zvals
+        tvals <- -tvals
     }
     tvals_pvals(tvals, df, side)
 }
@@ -188,3 +187,14 @@ find_cross_two_lines <- function(x1, x2, y1, y2){
     }
     return(unique(cross))
 }
+
+gen_fast_AR <- function(n, rho){
+    x <- rep(NA, n)
+    x[1] <- rnorm(1)
+    for (i in 2:n){
+        x[i] <- x[i - 1] * rho + rnorm(1) * sqrt(1 - rho^2)
+    }
+    return(x)
+}
+
+

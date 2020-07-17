@@ -1,7 +1,10 @@
 source("dBH_mvgauss_qc.R")
 source("dBH_mvgauss_qc_grid.R")
 
-dBH_mvgauss <- function(zvals, Sigma,
+dBH_mvgauss <- function(zvals,
+                        Sigma = NULL,
+                        Sigmafun = NULL,
+                        vars = NULL,
                         side = c("right", "left", "two"),
                         alpha = 0.05, gamma = NULL,
                         niter = 1,
@@ -18,21 +21,35 @@ dBH_mvgauss <- function(zvals, Sigma,
     }
     if (niter == 1){
         if (tautype == "QC"){
-            dBH_mvgauss_qc(zvals, Sigma, side,
-                           alpha, gamma,
-                           avals, avals_type, beta,
-                           eps,
-                           qcap)
+            dBH_mvgauss_qc(zvals = zvals,
+                           Sigma = Sigma,
+                           Sigmafun = Sigmafun,
+                           vars = vars,
+                           side = side,
+                           alpha = alpha,
+                           gamma = gamma,
+                           avals = avals,
+                           avals_type = avals_type,
+                           beta = beta,
+                           eps = eps,
+                           qcap = qcap)
         }
     } else if (niter == 2){
         if (tautype == "QC"){
-            dBH_mvgauss_qc_grid(zvals, Sigma, side,
-                                alpha, gamma,
-                                avals, avals_type, beta,
-                                eps,
-                                qcap,
-                                gridsize,
-                                exptcap)
+            dBH_mvgauss_qc_grid(zvals = zvals,
+                                Sigma = Sigma,
+                                Sigmafun = Sigmafun,
+                                vars = vars,
+                                side = side,
+                                alpha = alpha,
+                                gamma = gamma,
+                                avals = avals,
+                                avals_type = avals_type,
+                                beta = beta,
+                                eps = eps,
+                                qcap = qcap,
+                                gridsize = gridsize,
+                                exptcap = exptcap)
         }
     }
 }

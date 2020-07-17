@@ -31,8 +31,8 @@ if (!interactive()){
     n <- 100
     pi1 <- 0.1
     mu_type <- 1
-    nreps <- 100
-    side <- "right"
+    nreps <- 20
+    side <- "two"
     skip_dBH2 <- FALSE
     seed <- 0
 }

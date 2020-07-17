@@ -101,7 +101,7 @@ quadroots_mvt <- function(a, b, thresh){
 compute_knots_mvt <- function(tstat, tminus, df, cor,
                               alpha, side,
                               low, high,
-                              avals, avals_type, gamma
+                              avals, avals_type, beta
                               ){
     n <- length(tminus) + 1
     navals <- length(avals)    
@@ -166,8 +166,8 @@ compute_knots_mvt <- function(tstat, tminus, df, cor,
         thrid_upper <- floor(pt(thr_bounds$lower * sqdf, df = df, lower.tail = FALSE) * n / alpha - 1e-15)
         thrid_lower <- ceiling(pt(thr_bounds$upper * sqdf, df = df, lower.tail = FALSE) * n / alpha + 1e-15)
         if (avals_type == "geom"){
-            thrid_upper <- find_ind_geom_avals(gamma, thrid_upper, "max")
-            thrid_lower <- find_ind_geom_avals(gamma, thrid_lower, "min")
+            thrid_upper <- find_ind_geom_avals(beta, thrid_upper, "max")
+            thrid_lower <- find_ind_geom_avals(beta, thrid_lower, "min")
         } else if (avals_type == "manual"){
             thrid_upper <- find_posit_vec(thrid_upper, avals, "left", FALSE)
             thrid_lower <- find_posit_vec(thrid_lower, avals, "right", FALSE)
