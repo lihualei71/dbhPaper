@@ -53,7 +53,7 @@ linroots_mvgauss <- function(a, b, thresh){
 compute_knots_mvgauss <- function(zstat, zminus, cor,
                                   alpha, side,
                                   low, high,
-                                  avals, avals_type, beta
+                                  avals, avals_type, geom_fac
                                   ){
     n <- length(zminus) + 1
     navals <- length(avals)
@@ -101,8 +101,8 @@ compute_knots_mvgauss <- function(zstat, zminus, cor,
         thrid_upper <- floor(pnorm(thr_bounds$lower, lower.tail = FALSE) * n / alpha - 1e-15)
         thrid_lower <- ceiling(pnorm(thr_bounds$upper, lower.tail = FALSE) * n / alpha + 1e-15)
         if (avals_type == "geom"){
-            thrid_upper <- find_ind_geom_avals(beta, thrid_upper, "max")
-            thrid_lower <- find_ind_geom_avals(beta, thrid_lower, "min")
+            thrid_upper <- find_ind_geom_avals(geom_fac, thrid_upper, "max")
+            thrid_lower <- find_ind_geom_avals(geom_fac, thrid_lower, "min")
         } else if (avals_type == "manual"){
             thrid_upper <- find_posit_vec(thrid_upper, avals, "left", FALSE)
             thrid_lower <- find_posit_vec(thrid_lower, avals, "right", FALSE)

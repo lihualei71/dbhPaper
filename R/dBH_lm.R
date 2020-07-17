@@ -8,11 +8,12 @@ dBH_lm <- function(y, X,
                    niter = 1,                   
                    avals = NULL,
                    avals_type = c("BH", "geom", "bonf", "manual"),
-                   beta = 2,
+                   geom_fac = 2,
                    eps = 0.05,
                    qcap = TRUE,
                    gridsize = 20,
-                   exptcap = 0.9){
+                   exptcap = 0.9,
+                   is_safe = NULL){
     stats <- lm_mvt(y, X)
     dBH_mvt(tvals = stats$tvals, 
             df = stats$df,
@@ -26,9 +27,10 @@ dBH_lm <- function(y, X,
             niter = niter,
             avals = avals,
             avals_type = avals_type,
-            beta = beta,
+            geom_fac = geom_fac,
             eps = eps,
             qcap = qcap,
             gridsize = gridsize,
-            exptcap = exptcap)
+            exptcap = exptcap,
+            is_safe = is_safe)
 }

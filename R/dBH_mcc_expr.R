@@ -38,8 +38,8 @@ if (!interactive()){
     pi1 <- 0.1
     mu_type <- 1
     nreps <- 5
-    side <- "two"
-    skip_dBH2 <- FALSE
+    side <- "right"
+    skip_dBH2 <- TRUE
     skip_knockoff <- FALSE
     seed <- 0
 }
@@ -56,7 +56,7 @@ file_root <- paste0("../cluster_raw_data/dBH_mcc",
                     "_knockoff", !skip_knockoff,
                     "_seed", seed)
 gamma <- c(0.9, NA)
-beta <- c(NA, 2)
+geom_fac <- c(NA, 2)
 alphas <- c(0.05, 0.2)
 tautype <- "QC"
 
@@ -82,7 +82,7 @@ res <- dBH_mcc_expr(ng, nr,
                     side,
                     alphas, nreps,
                     gamma = gamma,
-                    beta = beta,
+                    geom_fac = geom_fac,
                     skip_knockoff = skip_knockoff,
                     skip_dBH2 = skip_dBH2)
 print(postprocess(res))

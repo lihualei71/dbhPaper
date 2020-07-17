@@ -11,11 +11,12 @@ dBH_mvgauss <- function(zvals,
                         tautype = "QC",
                         avals = NULL, 
                         avals_type = c("BH", "geom", "bonf", "manual"),
-                        beta = 2,
+                        geom_fac = 2,
                         eps = 0.05,
                         qcap = 2,
                         gridsize = 20,
-                        exptcap = 0.9){
+                        exptcap = 0.9,
+                        is_safe = NULL){
     if (niter > 2){
         stop("\'niter\' can only be 1 or 2.")
     }
@@ -27,12 +28,12 @@ dBH_mvgauss <- function(zvals,
     if (is.null(avals)){
         if (avals_type == "manual"){
             stop("avals must be inputted when avals_type = \"manual\"")
-        } else if (avals_type == "geom" && beta <= 1){
-            stop("beta must be larger than 1 when avals_type = \"geom\"")
+        } else if (avals_type == "geom" && geom_fac <= 1){
+            stop("geom_fac must be larger than 1 when avals_type = \"geom\"")
         }
         avals <- switch(avals_type,
                         BH = 1:n,
-                        geom = geom_avals(beta, n),
+                        geom = geom_avals(geom_fac, n),
                         bonf = 1)
     } else if (is.null(avals_type)) {
         if (avals[1] != 1){
@@ -47,8 +48,10 @@ dBH_mvgauss <- function(zvals,
     if (is.null(gamma)){
         gamma <- 1 / normalize(avals)
         is_safe <- TRUE
-    } else {
+    } else if (is.null(is_safe)){
         is_safe <- (gamma <= 1 / normalize(avals))
+    } else if (!is_safe){
+        warning("Set is_safe = TRUE only if you can prove the procedure is safe (e.g. CPRDS case with gamma = 1)")
     }
 
     if (!is.null(Sigma) && any(diag(Sigma) != 1)){
@@ -78,7 +81,7 @@ dBH_mvgauss <- function(zvals,
                            is_safe = is_safe,
                            avals = avals,
                            avals_type = avals_type,
-                           beta = beta,
+                           geom_fac = geom_fac,
                            eps = eps,
                            qcap = qcap)
         }
@@ -93,7 +96,7 @@ dBH_mvgauss <- function(zvals,
                                 is_safe = is_safe,
                                 avals = avals,
                                 avals_type = avals_type,
-                                beta = beta,
+                                geom_fac = geom_fac,
                                 eps = eps,
                                 qcap = qcap,
                                 gridsize = gridsize,

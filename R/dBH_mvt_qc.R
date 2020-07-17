@@ -11,7 +11,7 @@ dBH_mvt_qc <- function(tvals, df,
                        is_safe = FALSE,
                        avals = NULL, 
                        avals_type = c("BH", "geom", "bonf", "manual"),
-                       beta = 2,
+                       geom_fac = 2,
                        eps = 0.05,
                        qcap = 2){
     n <- length(tvals)
@@ -53,7 +53,7 @@ dBH_mvt_qc <- function(tvals, df,
             high = high,
             avals = avals,
             avals_type = avals_type,
-            beta = beta)
+            geom_fac = geom_fac)
         res_q <- lapply(res_q, function(re){
             RBH <- RejsBH(re$posit, re$sgn, re$RCV, avals)
             knots <- c(re$low, re$knots)
@@ -70,7 +70,7 @@ dBH_mvt_qc <- function(tvals, df,
             if (avals_type == "BH"){
                 thra <- nrejs
             } else if (avals_type == "geom"){                
-                thra <- find_ind_geom_avals(beta, nrejs, "max")
+                thra <- find_ind_geom_avals(geom_fac, nrejs, "max")
                 ## 0 rejection should return aval = 0
                 thra[thra == 0] <- NA
                 thra <- avals[thra]
@@ -99,7 +99,7 @@ dBH_mvt_qc <- function(tvals, df,
             high = high,
             avals = avals,
             avals_type = avals_type,
-            beta = beta)
+            geom_fac = geom_fac)
         res_alpha0 <- lapply(res_alpha0, function(re){
             RBH <- RejsBH(re$posit, re$sgn, re$RCV, avals)
             knots <- c(re$low, re$knots)
@@ -116,7 +116,7 @@ dBH_mvt_qc <- function(tvals, df,
             if (avals_type == "BH"){
                 thra <- nrejs
             } else if (avals_type == "geom"){                
-                thra <- find_ind_geom_avals(beta, nrejs, "max")
+                thra <- find_ind_geom_avals(geom_fac, nrejs, "max")
                 ## 0 rejection should return aval = 0
                 thra[thra == 0] <- NA
                 thra <- avals[thra]

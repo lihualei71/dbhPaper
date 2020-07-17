@@ -59,23 +59,23 @@ genmu <- function(n, pi1, mu1,
 }
 
 gen_methods <- function(gamma,
-                        beta,
+                        geom_fac,
                         tautype,
                         skip_knockoff,
                         skip_dBH2){
     expr_params <- expand.grid(
         gamma = gamma,
-        beta = beta,
+        geom_fac = geom_fac,
         tautype = tautype
     )
 
-    BH_methods <- sapply(union(NA, beta), function(x){
+    BH_methods <- sapply(union(NA, geom_fac), function(x){
         if (is.na(x)){
-            beta <- "full"
+            geom_fac <- "full"
         } else {
-            beta <- paste0("sparse(", x, ")")
+            geom_fac <- paste0("sparse(", x, ")")
         }
-        tmp <- paste0("BH_", beta)
+        tmp <- paste0("BH_", geom_fac)
         c(tmp, paste0(tmp, "_safe"))
     })
     methods <- c(BH_methods, "BC")
@@ -91,17 +91,17 @@ gen_methods <- function(gamma,
             gamma <- x[1]
         }
         if (is.na(x[2])){
-            beta <- "full"
+            geom_fac <- "full"
         } else {
-            beta <- paste0("sparse(", as.numeric(x[2]), ")")
+            geom_fac <- paste0("sparse(", as.numeric(x[2]), ")")
         }
         tautype <- x[3]
         
         method1 <- paste0("dBH_", tautype,
-                          "_", beta,
+                          "_", geom_fac,
                           "_", gamma)
         method2 <- paste0("dBH_init_", tautype,
-                          "_", beta,
+                          "_", geom_fac,
                           "_", gamma)
         c(method1, method2)
     })
@@ -114,17 +114,17 @@ gen_methods <- function(gamma,
                 gamma <- x[1]
             }
             if (is.na(x[2])){
-                beta <- "full"
+                geom_fac <- "full"
             } else {
-                beta <- paste0("sparse(", as.numeric(x[2]), ")")
+                geom_fac <- paste0("sparse(", as.numeric(x[2]), ")")
             }
             tautype <- x[3]
             
             method1 <- paste0("dBH2_", tautype,
-                              "_", beta,
+                              "_", geom_fac,
                               "_", gamma)
             method2 <- paste0("dBH2_init_", tautype,
-                              "_", beta,
+                              "_", geom_fac,
                               "_", gamma)
             c(method1, method2)
         })
@@ -140,7 +140,7 @@ dBH_mvgauss_expr <- function(n, mu1, pi1,
                              side,
                              alphas, nreps,
                              gamma = 0.9,
-                             beta = 2,
+                             geom_fac = 2,
                              tautype = "QC",
                              skip_dBH2 = TRUE,
                              ...){
@@ -150,11 +150,11 @@ dBH_mvgauss_expr <- function(n, mu1, pi1,
     eigSigma <- eigen(Sigma)
     sqrtSigma <- with(eigSigma, vectors %*% (sqrt(values) * t(vectors)))
 
-    methods <- gen_methods(gamma, beta, tautype,
+    methods <- gen_methods(gamma, geom_fac, tautype,
                            TRUE, skip_dBH2)
     expr_params <- expand.grid(
         gamma = gamma,
-        beta = beta,
+        geom_fac = geom_fac,
         tautype = tautype
     )
 
@@ -184,7 +184,7 @@ dBH_mvgauss_expr <- function(n, mu1, pi1,
             alpha <- alphas[k]
             
             ## BH rejections
-            for (x in union(NA, beta)){
+            for (x in union(NA, geom_fac)){
                 if (is.na(x)){
                     avals <- 1:n
                 } else {
@@ -226,7 +226,7 @@ dBH_mvgauss_expr <- function(n, mu1, pi1,
                     niter = 1,
                     tautype = type,
                     avals_type = avals_type,
-                    beta = x, ...)
+                    geom_fac = x, ...)
                 rejs_dBH_init <- list(rejs = rejs_dBH$initrejs)
                 obj <- c(obj, list(rejs_dBH, rejs_dBH_init))
             }
@@ -256,7 +256,7 @@ dBH_mvgauss_expr <- function(n, mu1, pi1,
                         niter = 2,
                         tautype = type,
                         avals_type = avals_type,
-                        beta = x, ...)
+                        geom_fac = x, ...)
                     rejs_dBH2_init <- list(rejs = rejs_dBH2$initrejs)
                     obj <- c(obj, list(rejs_dBH2, rejs_dBH2_init))
                 }
@@ -285,7 +285,7 @@ dBH_mvt_expr <- function(n, df, mu1, pi1,
                          side,
                          alphas, nreps,
                          gamma = 0.9,
-                         beta = 2,
+                         geom_fac = 2,
                          tautype = "QC",
                          skip_dBH2 = TRUE,
                          ...){
@@ -294,11 +294,11 @@ dBH_mvt_expr <- function(n, df, mu1, pi1,
     eigSigma <- eigen(Sigma)
     sqrtSigma <- with(eigSigma, vectors %*% (sqrt(values) * t(vectors)))
 
-    methods <- gen_methods(gamma, beta, tautype,
+    methods <- gen_methods(gamma, geom_fac, tautype,
                            TRUE, skip_dBH2)
     expr_params <- expand.grid(
         gamma = gamma,
-        beta = beta,
+        geom_fac = geom_fac,
         tautype = tautype
     )
 
@@ -330,7 +330,7 @@ dBH_mvt_expr <- function(n, df, mu1, pi1,
             alpha <- alphas[k]            
 
             ## BH rejections
-            for (x in union(NA, beta)){
+            for (x in union(NA, geom_fac)){
                 if (is.na(x)){
                     avals <- 1:n
                 } else {
@@ -373,7 +373,7 @@ dBH_mvt_expr <- function(n, df, mu1, pi1,
                     niter = 1,
                     tautype = type,
                     avals_type = avals_type,
-                    beta = x, ...)
+                    geom_fac = x, ...)
                 rejs_dBH_init <- list(rejs = rejs_dBH$initrejs)
                 obj <- c(obj, list(rejs_dBH, rejs_dBH_init))
             }
@@ -404,7 +404,7 @@ dBH_mvt_expr <- function(n, df, mu1, pi1,
                         niter = 2,
                         tautype = type,
                         avals_type = avals_type,
-                        beta = x, ...)
+                        geom_fac = x, ...)
                     rejs_dBH2_init <- list(rejs = rejs_dBH2$initrejs)
                     obj <- c(obj, list(rejs_dBH2, rejs_dBH2_init))
                 }
@@ -432,7 +432,7 @@ dBH_lm_expr <- function(X, mu1, pi1,
                         side,
                         alphas, nreps,
                         gamma = 0.9,
-                        beta = 2,
+                        geom_fac = 2,
                         tautype = "QC",
                         skip_knockoff = TRUE,
                         skip_dBH2 = TRUE,
@@ -452,11 +452,11 @@ dBH_lm_expr <- function(X, mu1, pi1,
     H <- X %*% Sigma %*% t(X)
     df <- n - p
 
-    methods <- gen_methods(gamma, beta, tautype,
+    methods <- gen_methods(gamma, geom_fac, tautype,
                            skip_knockoff, skip_dBH2)
     expr_params <- expand.grid(
         gamma = gamma,
-        beta = beta,
+        geom_fac = geom_fac,
         tautype = tautype
     )
 
@@ -493,7 +493,7 @@ dBH_lm_expr <- function(X, mu1, pi1,
             alpha <- alphas[k]            
 
             ## BH rejections
-            for (x in union(NA, beta)){
+            for (x in union(NA, geom_fac)){
                 if (is.na(x)){
                     avals <- 1:p
                 } else {
@@ -543,7 +543,7 @@ dBH_lm_expr <- function(X, mu1, pi1,
                     niter = 1,
                     tautype = type,
                     avals_type = avals_type,
-                    beta = x, ...)
+                    geom_fac = x, ...)
                 rejs_dBH_init <- list(rejs = rejs_dBH$initrejs)
                 obj <- c(obj, list(rejs_dBH, rejs_dBH_init))
             }
@@ -574,7 +574,7 @@ dBH_lm_expr <- function(X, mu1, pi1,
                         niter = 2,
                         tautype = type,
                         avals_type = avals_type,
-                        beta = x, ...)
+                        geom_fac = x, ...)
                     rejs_dBH2_init <- list(rejs = rejs_dBH2$initrejs)
                     obj <- c(obj, list(rejs_dBH2, rejs_dBH2_init))
                 }
@@ -603,7 +603,7 @@ dBH_mcc_expr <- function(ng, nr,
                          side,
                          alphas, nreps,
                          gamma = 0.9,
-                         beta = 2,
+                         geom_fac = 2,
                          tautype = "QC",
                          skip_knockoff = TRUE,
                          skip_dBH2 = TRUE,
@@ -622,11 +622,11 @@ dBH_mcc_expr <- function(ng, nr,
         Xk_sdp <- knockoff::create.fixed(X, "sdp")$Xk
     }
 
-    methods <- gen_methods(gamma, beta, tautype,
+    methods <- gen_methods(gamma, geom_fac, tautype,
                            skip_knockoff, skip_dBH2)
     expr_params <- expand.grid(
         gamma = gamma,
-        beta = beta,
+        geom_fac = geom_fac,
         tautype = tautype
     )
 
@@ -661,7 +661,7 @@ dBH_mcc_expr <- function(ng, nr,
             alpha <- alphas[k]            
 
             ## BH rejections
-            for (x in union(NA, beta)){
+            for (x in union(NA, geom_fac)){
                 if (is.na(x)){
                     avals <- 1:ng
                 } else {
@@ -712,7 +712,7 @@ dBH_mcc_expr <- function(ng, nr,
                     niter = 1,
                     tautype = type,
                     avals_type = avals_type,
-                    beta = x, ...)
+                    geom_fac = x, ...)
                 rejs_dBH_init <- list(rejs = rejs_dBH$initrejs)
                 obj <- c(obj, list(rejs_dBH, rejs_dBH_init))
             }
@@ -743,7 +743,7 @@ dBH_mcc_expr <- function(ng, nr,
                         niter = 2,
                         tautype = type,
                         avals_type = avals_type,
-                        beta = x, ...)
+                        geom_fac = x, ...)
                     rejs_dBH2_init <- list(rejs = rejs_dBH2$initrejs)
                     obj <- c(obj, list(rejs_dBH2, rejs_dBH2_init))
                 }

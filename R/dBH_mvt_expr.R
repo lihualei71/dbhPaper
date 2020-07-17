@@ -35,8 +35,8 @@ if (!interactive()){
     pi1 <- 0.1
     mu_type <- 1
     nreps <- 5
-    side <- "two"
-    skip_dBH2 <- FALSE
+    side <- "right"
+    skip_dBH2 <- TRUE
     seed <- 0
 }
 
@@ -50,7 +50,7 @@ file_root <- paste0("../cluster_raw_data/dBH_mvt",
                     "_nreps", nreps,
                     "_dBH2", !skip_dBH2,
                     "_seed", seed)
-beta <- c(NA, 2)
+geom_fac <- c(NA, 2)
 alphas <- 0.05
 tautype <- "QC"
 
@@ -80,7 +80,7 @@ res <- dBH_mvt_expr(n, df, mu1$ARplus_fix, pi1,
                     side,
                     alphas, nreps,
                     gamma = gamma,
-                    beta = beta,
+                    geom_fac = geom_fac,
                     tautype = tautype,
                     skip_dBH2 = skip_dBH2)
 print(postprocess(res))
@@ -100,7 +100,7 @@ res <- dBH_mvt_expr(n, df, mu1$iid_fix, pi1,
                     side,                        
                     alphas, nreps,
                     gamma = gamma,
-                    beta = beta,
+                    geom_fac = geom_fac,
                     tautype = tautype,
                     skip_dBH2 = skip_dBH2)
 print(postprocess(res))
@@ -120,7 +120,7 @@ res <- dBH_mvt_expr(n, df, mu1$block_fix, pi1,
                     side,                        
                     alphas, nreps,
                     gamma = gamma,
-                    beta = beta,
+                    geom_fac = geom_fac,
                     tautype = tautype,
                     skip_dBH2 = skip_dBH2)
 print(postprocess(res))
