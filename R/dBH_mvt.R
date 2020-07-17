@@ -22,6 +22,7 @@ dBH_mvt <- function(tvals, df,
 
     side <- side[1]
     avals_type <- avals_type[1]
+    tautype <- tautype[1]    
     n <- length(tvals)
     if (is.null(avals)){
         if (avals_type == "manual"){
@@ -69,7 +70,6 @@ dBH_mvt <- function(tvals, df,
         side <- "one"
     }
     
-    tautype <- tautype[1]
     if (niter == 1){
         if (tautype == "QC"){
             dBH_mvt_qc(tvals = tvals, 

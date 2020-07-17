@@ -6,58 +6,16 @@ source("compute_knots_mvgauss.R")
 dBH_mvgauss_qc <- function(zvals,
                            Sigma = NULL,
                            Sigmafun = NULL,
-                           vars = NULL,
-                           side = c("right", "left", "two"),
+                           side = c("one", "two"),
                            alpha = 0.05, gamma = NULL,
+                           is_safe = FALSE,
                            avals = NULL, 
                            avals_type = c("BH", "geom", "bonf", "manual"),
                            beta = 2,
                            eps = 0.05,
                            qcap = 2){
-    side <- side[1]
-    avals_type <- avals_type[1]
     n <- length(zvals)
-    if (is.null(avals)){
-        if (avals_type == "manual"){
-            stop("avals must be inputted when avals_type = \"manual\"")
-        } else if (avals_type == "geom" && beta <= 1){
-            stop("beta must be larger than 1 when avals_type = \"geom\"")
-        }
-        avals <- switch(avals_type,
-                        BH = 1:n,
-                        geom = geom_avals(beta, n),
-                        bonf = 1)
-    } else {
-        if (avals[1] != 1){
-            stop("The first element of avals must be 1.")
-        }
-        avals_type <- "manual"
-        warning("avals is inputted and avals_type is set to be \"manual\" by default. This may slow down the code. Use the built-in avals_type (\"BH\", \"geom\" or \"bonf\") instead unless there is a good reason to use the inputted avals.")
-    }
-
-    if (is.null(gamma)){
-        gamma <- 1 / normalize(avals)
-        is_safe <- TRUE
-    } else {
-        is_safe <- (gamma <= 1 / normalize(avals))
-    }
     alpha0 <- gamma * alpha
-
-    if (is.null(Sigmafun)){
-        vars <- diag(Sigma)
-    } else {
-        if (is.null(vars)){
-            stop("The marginal variances 'vars' must be given when Sigmafun is used")
-        }
-    }
-    zvals <- zvals / sqrt(vars)    
-    if (side == "left"){
-        zvals <- -zvals
-        side <- "one"
-    } else if (side == "right"){
-        side <- "one"
-    }
-
     ntails <- ifelse(side == "two", 2, 1)    
     high <- qnorm(alpha * eps / n / ntails, lower.tail = FALSE)
     pvals <- zvals_pvals(zvals, side)
@@ -77,9 +35,9 @@ dBH_mvgauss_qc <- function(zvals,
     cand_info <- sapply(obj$cand, function(i){
         low <- qnorm(qvals[i] * max(avals) / n / ntails, lower.tail = FALSE)
         if (!is.null(Sigma)){
-            cor <- Sigma[-i, i] / vars[i]
+            cor <- Sigma[-i, i]
         } else {
-            cor <- Sigmafun(i)[-i] / vars[i]
+            cor <- Sigmafun(i)[-i]
         }
         
         ## RBH function with alpha = qi

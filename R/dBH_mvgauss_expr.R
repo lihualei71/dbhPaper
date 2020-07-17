@@ -32,7 +32,7 @@ if (!interactive()){
     pi1 <- 0.1
     mu_type <- 1
     nreps <- 20
-    side <- "two"
+    side <- "right"
     skip_dBH2 <- FALSE
     seed <- 0
 }

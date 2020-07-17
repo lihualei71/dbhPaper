@@ -735,7 +735,6 @@ dBH_mcc_expr <- function(ng, nr,
                     }
                     rejs_dBH2 <- dBH_mvt(
                         tvals = tvals,
-                        sigmahat = sigmahat,
                         df = df,
                         Sigma = Sigma,
                         side = side,

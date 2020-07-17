@@ -40,7 +40,7 @@ if (!interactive()){
     pi1 <- 0.1
     mu_type <- 1
     nreps <- 5
-    side <- "right"
+    side <- "two"
     skip_dBH2 <- FALSE
     skip_knockoff <- FALSE
     seed <- 0

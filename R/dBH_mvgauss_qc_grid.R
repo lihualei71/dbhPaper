@@ -3,9 +3,9 @@ source("dBH_utils.R")
 dBH_mvgauss_qc_grid <- function(zvals,
                                 Sigma = NULL,
                                 Sigmafun = NULL,
-                                vars = NULL,
                                 side = c("right", "left", "two"),
                                 alpha = 0.05, gamma = NULL,
+                                is_safe = FALSE,
                                 avals = NULL,
                                 avals_type = c("BH", "geom", "bonf", "manual"),
                                 beta = 2,
@@ -13,69 +13,26 @@ dBH_mvgauss_qc_grid <- function(zvals,
                                 qcap = 2,
                                 gridsize = 20,
                                 exptcap = 0.9){
-    side <- side[1]
-    avals_type <- avals_type[1]
     n <- length(zvals)
-    avals_obj <- list(avals = avals,
-                      avals_type = avals_type,
-                      beta = beta)
-
-    if (is.null(avals)){
-        if (avals_type == "manual"){
-            stop("avals must be inputted when avals_type = \"manual\"")
-        } else if (avals_type == "geom" && beta <= 1){
-            stop("beta must be larger than 1 when avals_type = \"geom\"")
-        }
-        avals <- switch(avals_type,
-                        BH = 1:n,
-                        geom = geom_avals(beta, n),
-                        bonf = 1)
-    } else {
-        if (avals[1] != 1){
-            stop("The first element of avals must be 1.")
-        }
-        avals_type <- "manual"
-        warning("avals is inputted and avals_type is set to be \"manual\" by default. This may slow down the code. Use the built-in avals_type (\"BH\", \"geom\" or \"bonf\") instead unless there is a good reason to use the inputted avals.")
-    }
-
-    if (is.null(gamma)){
-        gamma <- 1 / normalize(avals)
-    }
-
-    if (is.null(Sigmafun)){
-        vars <- diag(Sigma)
-    } else {
-        if (is.null(vars)){
-            stop("The marginal variances 'vars' must be given when Sigmafun is used")
-        }
-    }
-    zvals <- zvals / sqrt(vars)    
-    if (side == "left"){
-        zvals <- -zvals
-        side <- "one"
-    } else if (side == "right"){
-        side <- "one"
-    }
+    alpha0 <- gamma * alpha
+    ntails <- ifelse(side == "two", 2, 1)
+    high <- qnorm(alpha * eps / n / ntails, lower.tail = FALSE)
     pvals <- zvals_pvals(zvals, side)
     qvals <- qvals_BH_reshape(pvals, avals)
     
     params_root <- list(Sigma = Sigma,
                         Sigmafun = Sigmafun,
-                        vars = vars,
                         side = side,
                         alpha = alpha, gamma = gamma,
-                        avals = avals_obj$avals,
-                        avals_type = avals_obj$avals_type,
-                        beta = avals_obj$beta,
+                        avals = avals,
+                        avals_type = avals_type,
+                        beta = beta,
                         eps = eps,
                         qcap = qcap)
     params <- c(params_root, list(zvals = zvals))
     res_init <- do.call(dBH_mvgauss_qc, params)
     Rinit <- rep(length(res_init$initrejs) + 1, n)
     Rinit[res_init$initrejs] <- Rinit[res_init$initrejs] - 1
-
-    ntails <- ifelse(side == "two", 2, 1)
-    high <- qnorm(alpha * eps / n / ntails, lower.tail = FALSE)
 
     cand <- res_init$cand
     if (res_init$safe){
@@ -100,9 +57,9 @@ dBH_mvgauss_qc_grid <- function(zvals,
     cand_info <- sapply(cand, function(i){
         low <- qnorm(qvals[i] * max(avals) / n / ntails, lower.tail = FALSE)
         if (!is.null(Sigma)){
-            cor <- Sigma[-i, i] / vars[i]
+            cor <- Sigma[-i, i]
         } else {
-            cor <- Sigmafun(i)[-i] / vars[i]
+            cor <- Sigmafun(i)[-i]
         }
         s <- zvals[-i] - cor * zvals[i]        
 

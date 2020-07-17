@@ -34,14 +34,14 @@ if (!interactive()){
     seed <- args$seed
 } else {
     ng <- 100
-    nr <- 3
-    pi1 <- 0.3
-    mu_type <- 2
-    nreps <- 100
+    nr <- 30
+    pi1 <- 0.1
+    mu_type <- 1
+    nreps <- 5
     side <- "two"
-    skip_dBH2 <- TRUE
+    skip_dBH2 <- FALSE
     skip_knockoff <- FALSE
-    seed <- 1
+    seed <- 0
 }
 
 set.seed(seed)
@@ -55,12 +55,8 @@ file_root <- paste0("../cluster_raw_data/dBH_mcc",
                     "_dBH2", !skip_dBH2,
                     "_knockoff", !skip_knockoff,
                     "_seed", seed)
-if (side == "two"){
-    alpha_fac <- c(0.8, NA)
-} else {
-    alpha_fac <- c(1, 0.8, NA)
-}
-gamma <- c(NA, 2)
+gamma <- c(0.9, NA)
+beta <- c(NA, 2)
 alphas <- c(0.05, 0.2)
 tautype <- "QC"
 
@@ -85,8 +81,8 @@ res <- dBH_mcc_expr(ng, nr,
                     "fix", mu_type,
                     side,
                     alphas, nreps,
-                    alpha_fac = alpha_fac,
                     gamma = gamma,
+                    beta = beta,
                     skip_knockoff = skip_knockoff,
                     skip_dBH2 = skip_dBH2)
 print(postprocess(res))
