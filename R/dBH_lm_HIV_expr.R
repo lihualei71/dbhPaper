@@ -1,7 +1,6 @@
+library("dbh")
 source("utils.R")
 source("expr_functions.R")
-source("knockoffs.R")
-library("dbh")
 
 if (!file.exists("../data/HIV_data.RData")){
     source("HIV_preprocess.R")
@@ -16,7 +15,6 @@ HIV_expr <- function(X, y,
                      tautype = "QC",
                      skip_knockoff = TRUE,
                      skip_dBH2 = TRUE,
-                     intercept = TRUE,
                      ...){
     ## Log-transform the drug resistance measurements.
     y <- log(y)
@@ -39,7 +37,7 @@ HIV_expr <- function(X, y,
     nalphas <- length(alphas)
     n <- nrow(X)
     p <- ncol(X)
-    stats <- lm_mvt(y, X, 1:p, intercept)
+    stats <- lm_mvt(y, X, 1:p, intercept = FALSE)
     tvals <- stats$tvals
     df <- stats$df
     Sigma <- stats$Sigma
@@ -58,15 +56,15 @@ HIV_expr <- function(X, y,
         if (n < 2 * p){
             obj <- lm(y ~ X)
             sigma <- summary(obj)$sigma
-            nvars <- ifelse(intercept, 2 * p + 1, 2 * p)
+            nvars <- 2 * p
             Xnew <- matrix(0, nrow = nvars - n, ncol = p)
             ynew <- rnorm(nvars - n) * sigma
             X <- rbind(X, Xnew)
             y <- c(y, ynew)
             print("n < 2p. Approximated knockoff is used.")
         }
-        Xk_equi <- create_fixed(X, "equi", intercept = intercept)$Xk
-        Xk_sdp <- create_fixed(X, "sdp", intercept= intercept)$Xk
+        Xk_equi <- knockoff::create.fixed(X, "equi")$Xk
+        Xk_sdp <- knockoff::create.fixed(X, "sdp")$Xk
     }
     
     res <- list()

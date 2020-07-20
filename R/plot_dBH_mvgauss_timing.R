@@ -42,8 +42,8 @@ plot <- res %>% select(-model, -fac) %>%
         values = c("red", "red", "blue", "blue"),
         labels = c("dBH_1_BH" = expression(dBH[1]),
                    "dBH_2_BH" = expression(dBH[1]^{2}),
-                   "dBH_1_geom" = expression(dSU[1, Delta]),
-                   "dBH_2_geom" = expression(dSU[1, Delta]^{2}))
+                   "dBH_1_geom" = expression(s-dBH[1]),
+                   "dBH_2_geom" = expression(s-dBH[1]^{2}))
     ) +
     scale_linetype_manual(
         name = "method",
@@ -51,8 +51,8 @@ plot <- res %>% select(-model, -fac) %>%
         values = c("solid", "longdash", "solid", "longdash"),
         labels = c("dBH_1_BH" = expression(dBH[1]),
                    "dBH_2_BH" = expression(dBH[1]^{2}),
-                   "dBH_1_geom" = expression(dSU[1, Delta]),
-                   "dBH_2_geom" = expression(dBH[1, Delta]^{2}))
+                   "dBH_1_geom" = expression(s-dBH[1]),
+                   "dBH_2_geom" = expression(s-dBH[1]^{2}))
     ) +
     guides(color = guide_legend(
                override.aes = list(
