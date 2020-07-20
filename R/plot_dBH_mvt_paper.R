@@ -67,6 +67,7 @@ for (i in 1:nrow(settings)){
 
     plot <- data %>%
         select(-`FDR (init)`, -`power (init)`, -secBH,
+               -qmax, -q99, -q95,
                -model, -n, -df, -pi1, -alpha) %>%
         gather("type", "value", -method, -color, -side) %>%
         ggplot(aes(x = method, y = value,

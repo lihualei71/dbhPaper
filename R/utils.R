@@ -40,7 +40,6 @@ BC <- function(pvals, alpha = 0.05){
 }
 
 knockoff_lm <- function(X, Xk, y, alpha = 0.05){
-    ## W <- knockoff::stat.glmnet_coefdiff(X, Xk, y, nfolds=10)
     W <- knockoff::stat.glmnet_lambdasmax(X, Xk, y)
     thr <- knockoff::knockoff.threshold(W, fdr = alpha, offset = 1)
     rejs <- which(W >= thr)

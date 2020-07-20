@@ -105,6 +105,7 @@ for (i in 1:nrow(settings)){
                             color = c("black", "grey45"))
     plot <- data %>%
         select(-`FDR (init)`, -`power (init)`, -secBH,
+               -qmax, -q99, -q95,
                -model, -n, -p, -pi1, -side, -alpha) %>%
         gather("type", "value", -method, -method_type, -color) %>%
         ggplot(aes(x = method, y = value,

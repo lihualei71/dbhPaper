@@ -1,6 +1,5 @@
 #!/usr/bin/env Rscript
 
-source("dBH_mvt.R")
 source("utils.R")
 source("expr_functions.R")
 
@@ -36,7 +35,7 @@ if (!interactive()){
     mu_type <- 1
     nreps <- 5
     side <- "right"
-    skip_dBH2 <- TRUE
+    skip_dBH2 <- FALSE
     seed <- 0
 }
 
@@ -85,7 +84,7 @@ res <- dBH_mvt_expr(n, df, mu1$ARplus_fix, pi1,
                     skip_dBH2 = skip_dBH2)
 print(postprocess(res))
 filename <- paste0(file_root, "_", Sigma_type, "(", rho, ")_", mu_posit_type, ".RData")
-## save(res, file = filename)
+save(res, file = filename)
 
 #### Expr 2
 print("Expr 2\n")
@@ -105,7 +104,7 @@ res <- dBH_mvt_expr(n, df, mu1$iid_fix, pi1,
                     skip_dBH2 = skip_dBH2)
 print(postprocess(res))
 filename <- paste0(file_root, "_", Sigma_type, "(", rho, ")_", mu_posit_type, ".RData")
-## save(res, file = filename)
+save(res, file = filename)
 
 #### Expr 3
 print("Expr 3\n")
@@ -125,4 +124,4 @@ res <- dBH_mvt_expr(n, df, mu1$block_fix, pi1,
                     skip_dBH2 = skip_dBH2)
 print(postprocess(res))
 filename <- paste0(file_root, "_", Sigma_type, "(", rho, ")_", mu_posit_type, ".RData")
-## save(res, file = filename)
+save(res, file = filename)

@@ -1,3 +1,5 @@
+library("dbh")
+source("knockoffs.R")
 source("dBH_utils.R")
 source("utils.R")
 
@@ -22,10 +24,6 @@ genSigma <- function(n, rho = 0,
         Sigma <- diag(n)
         blockSigma <- matrix(rho, bsize, bsize)
         diag(blockSigma) <- 1
-        ## inds1 <- 1:ceiling(bsize / 2)
-        ## inds2 <- ceiling(bsize / 2 + 1):bsize
-        ## blockSigma[inds1, inds2] <- -rho
-        ## blockSigma[inds2, inds1] <- -rho        
         for (i in 1:m){
             inds <- ((i - 1) * bsize + 1):(i * bsize)
             Sigma[inds, inds] <- blockSigma
@@ -44,7 +42,6 @@ genmu <- function(n, pi1, mu1,
     posit_type <- posit_type[1]
     mu_type <- mu_type[1]
     if (posit_type == "random"){
-        ## inds <- sample(n, m)
         inds <- seq(1, n, floor(1 / pi1))[1:m]
     } else if (posit_type == "fix"){
         inds <- 1:m
@@ -164,7 +161,8 @@ dBH_mvgauss_expr <- function(n, mu1, pi1,
         return(list(alpha = alphas[k],
                     FDP = tmp,
                     power = tmp,
-                    secBH = tmp))
+                    secBH = tmp,
+                    qcap = tmp))
     })
 
     pb <- txtProgressBar(style=3)
@@ -178,7 +176,7 @@ dBH_mvgauss_expr <- function(n, mu1, pi1,
         H0 <- mu == 0
         zvals <- as.numeric(mu + sqrtSigma %*% rnorm(n))
         pvals <- pvals_mvgauss(zvals, Sigma, side)
-
+        
         for (k in 1:nalphas){
             obj <- list()
             alpha <- alphas[k]
@@ -209,9 +207,12 @@ dBH_mvgauss_expr <- function(n, mu1, pi1,
                 type <- expr_params[j, 3]
                 if (is.na(x)){
                     avals_type <- "BH"
+                    avals <- 1:n
                 } else {
                     avals_type <- "geom"
+                    avals <- geom_avals(x, n)
                 }
+                qvals <- qvals_BH_reshape(pvals, avals)
                 if (is.na(fac)){
                     gamma <- NULL
                 } else {
@@ -227,6 +228,9 @@ dBH_mvgauss_expr <- function(n, mu1, pi1,
                     tautype = type,
                     avals_type = avals_type,
                     geom_fac = x, ...)
+                rejs_dBH$maxq <- ifelse(
+                    length(rejs_dBH$initrejs) == 0, NA,
+                    max(qvals[rejs_dBH$initrejs] / alpha))
                 rejs_dBH_init <- list(rejs = rejs_dBH$initrejs)
                 obj <- c(obj, list(rejs_dBH, rejs_dBH_init))
             }
@@ -239,9 +243,12 @@ dBH_mvgauss_expr <- function(n, mu1, pi1,
                     type <- expr_params[j, 3]
                     if (is.na(x)){
                         avals_type <- "BH"
+                        avals <- 1:n
                     } else {
                         avals_type <- "geom"
+                        avals <- geom_avals(x, n)
                     }
+                    qvals <- qvals_BH_reshape(pvals, avals)
                     if (is.na(fac)){
                         gamma <- NULL
                     } else {
@@ -257,6 +264,9 @@ dBH_mvgauss_expr <- function(n, mu1, pi1,
                         tautype = type,
                         avals_type = avals_type,
                         geom_fac = x, ...)
+                    rejs_dBH2$maxq <- ifelse(
+                        length(rejs_dBH2$initrejs) == 0, NA,
+                        max(qvals[rejs_dBH2$initrejs] / alpha))
                     rejs_dBH2_init <- list(rejs = rejs_dBH2$initrejs)
                     obj <- c(obj, list(rejs_dBH2, rejs_dBH2_init))
                 }
@@ -270,6 +280,9 @@ dBH_mvgauss_expr <- function(n, mu1, pi1,
             inds <- seq(nBHBC + 1, length(methods), 2)
             results[[k]]$secBH[inds, i] <- sapply(obj[inds], function(output){
                 output$secBH
+            })
+            results[[k]]$qcap[inds, i] <- sapply(obj[inds], function(output){
+                output$maxq
             })
             setTxtProgressBar(pb, ((i-1)*nalphas + k)/(nreps*nalphas))
         }
@@ -308,7 +321,8 @@ dBH_mvt_expr <- function(n, df, mu1, pi1,
         return(list(alpha = alphas[k],
                     FDP = tmp,
                     power = tmp,
-                    secBH = tmp))
+                    secBH = tmp,
+                    qcap = tmp))
     })
     
     pb <- txtProgressBar(style=3)
@@ -355,9 +369,12 @@ dBH_mvt_expr <- function(n, df, mu1, pi1,
                 type <- expr_params[j, 3]
                 if (is.na(x)){
                     avals_type <- "BH"
+                    avals <- 1:n                    
                 } else {
                     avals_type <- "geom"
+                    avals <- geom_avals(x, n)
                 }
+                qvals <- qvals_BH_reshape(pvals, avals)
                 if (is.na(fac)){
                     gamma <- NULL
                 } else {
@@ -374,6 +391,9 @@ dBH_mvt_expr <- function(n, df, mu1, pi1,
                     tautype = type,
                     avals_type = avals_type,
                     geom_fac = x, ...)
+                rejs_dBH$maxq <- ifelse(
+                    length(rejs_dBH$initrejs) == 0, NA,
+                    max(qvals[rejs_dBH$initrejs] / alpha))
                 rejs_dBH_init <- list(rejs = rejs_dBH$initrejs)
                 obj <- c(obj, list(rejs_dBH, rejs_dBH_init))
             }
@@ -386,14 +406,17 @@ dBH_mvt_expr <- function(n, df, mu1, pi1,
                     type <- expr_params[j, 3]
                     if (is.na(x)){
                         avals_type <- "BH"
+                        avals <- 1:n                        
                     } else {
                         avals_type <- "geom"
+                        avals <- geom_avals(x, n)
                     }
                     if (is.na(fac)){
                         gamma <- NULL
                     } else {
                         gamma <- fac
                     }
+                    qvals <- qvals_BH_reshape(pvals, avals)
                     rejs_dBH2 <- dBH_mvt(
                         tvals = tvals,
                         df = df,
@@ -405,6 +428,9 @@ dBH_mvt_expr <- function(n, df, mu1, pi1,
                         tautype = type,
                         avals_type = avals_type,
                         geom_fac = x, ...)
+                    rejs_dBH2$maxq <- ifelse(
+                        length(rejs_dBH2$initrejs) == 0, NA,
+                        max(qvals[rejs_dBH2$initrejs] / alpha))
                     rejs_dBH2_init <- list(rejs = rejs_dBH2$initrejs)
                     obj <- c(obj, list(rejs_dBH2, rejs_dBH2_init))
                 }
@@ -418,6 +444,9 @@ dBH_mvt_expr <- function(n, df, mu1, pi1,
             inds <- seq(nBHBC + 1, length(methods), 2)
             results[[k]]$secBH[inds, i] <- sapply(obj[inds], function(output){
                 output$secBH
+            })
+            results[[k]]$qcap[inds, i] <- sapply(obj[inds], function(output){
+                output$maxq
             })
             setTxtProgressBar(pb, ((i-1)*nalphas + k)/(nreps*nalphas))
         }
@@ -466,7 +495,8 @@ dBH_lm_expr <- function(X, mu1, pi1,
         return(list(alpha = alphas[k],
                     FDP = tmp,
                     power = tmp,
-                    secBH = tmp))
+                    secBH = tmp,
+                    qcap = tmp))
     })
 
     pb <- txtProgressBar(style=3)
@@ -525,9 +555,12 @@ dBH_lm_expr <- function(X, mu1, pi1,
                 type <- expr_params[j, 3]
                 if (is.na(x)){
                     avals_type <- "BH"
+                    avals <- 1:p                    
                 } else {
                     avals_type <- "geom"
+                    avals <- geom_avals(x, p)
                 }
+                qvals <- qvals_BH_reshape(pvals, avals)
                 if (is.na(fac)){
                     gamma <- NULL
                 } else {
@@ -544,6 +577,9 @@ dBH_lm_expr <- function(X, mu1, pi1,
                     tautype = type,
                     avals_type = avals_type,
                     geom_fac = x, ...)
+                rejs_dBH$maxq <- ifelse(
+                    length(rejs_dBH$initrejs) == 0, NA,
+                    max(qvals[rejs_dBH$initrejs] / alpha))
                 rejs_dBH_init <- list(rejs = rejs_dBH$initrejs)
                 obj <- c(obj, list(rejs_dBH, rejs_dBH_init))
             }
@@ -556,9 +592,12 @@ dBH_lm_expr <- function(X, mu1, pi1,
                     type <- expr_params[j, 3]
                     if (is.na(x)){
                         avals_type <- "BH"
+                        avals <- 1:p                        
                     } else {
                         avals_type <- "geom"
+                        avals <- geom_avals(x, p)
                     }
+                    qvals <- qvals_BH_reshape(pvals, avals)
                     if (is.na(fac)){
                         gamma <- NULL
                     } else {
@@ -575,6 +614,9 @@ dBH_lm_expr <- function(X, mu1, pi1,
                         tautype = type,
                         avals_type = avals_type,
                         geom_fac = x, ...)
+                    rejs_dBH2$maxq <- ifelse(
+                        length(rejs_dBH2$initrejs) == 0, NA,
+                        max(qvals[rejs_dBH2$initrejs] / alpha))
                     rejs_dBH2_init <- list(rejs = rejs_dBH2$initrejs)
                     obj <- c(obj, list(rejs_dBH2, rejs_dBH2_init))
                 }
@@ -588,6 +630,9 @@ dBH_lm_expr <- function(X, mu1, pi1,
             inds <- seq(nBHBCkn + 1, length(methods), 2)
             results[[k]]$secBH[inds, i] <- sapply(obj[inds], function(output){
                 output$secBH
+            })
+            results[[k]]$qcap[inds, i] <- sapply(obj[inds], function(output){
+                output$maxq
             })
             setTxtProgressBar(pb, ((i-1)*nalphas + k)/(nreps*nalphas))
         }
@@ -611,15 +656,15 @@ dBH_mcc_expr <- function(ng, nr,
     df <- (ng + 1) * (nr - 1)
     Sigma <- (diag(1, ng) + 1) / 2
     
-    X <- lapply(1:ng, function(i){diag(rep(1, nr))})
+    X <- lapply(1:nr, function(i){
+      	rbind(diag(rep(1, ng)), rep(0, ng))
+    })
     X <- do.call(rbind, X)
-    X <- rbind(X, matrix(0, nr, nr))
+    X <- scale(X, scale = FALSE)
     nalphas <- length(alphas)
-    n <- nrow(X)
-    p <- ncol(X)
     if (!skip_knockoff){
-        Xk_equi <- knockoff::create.fixed(X, "equi")$Xk
-        Xk_sdp <- knockoff::create.fixed(X, "sdp")$Xk
+        Xk_equi <- create_fixed(X, "equi", intercept = TRUE)$Xk
+        Xk_sdp <- create_fixed(X, "sdp", intercept = TRUE)$Xk
     }
 
     methods <- gen_methods(gamma, geom_fac, tautype,
@@ -636,7 +681,8 @@ dBH_mcc_expr <- function(ng, nr,
         return(list(alpha = alphas[k],
                     FDP = tmp,
                     power = tmp,
-                    secBH = tmp))
+                    secBH = tmp,
+                    qcap = tmp))
     })
 
     pb <- txtProgressBar(style=3)
@@ -694,9 +740,12 @@ dBH_mcc_expr <- function(ng, nr,
                 type <- expr_params[j, 3]
                 if (is.na(x)){
                     avals_type <- "BH"
+                    avals <- 1:ng
                 } else {
                     avals_type <- "geom"
+                    avals <- geom_avals(x, ng)
                 }
+                qvals <- qvals_BH_reshape(pvals, avals)
                 if (is.na(fac)){
                     gamma <- NULL
                 } else {
@@ -713,6 +762,9 @@ dBH_mcc_expr <- function(ng, nr,
                     tautype = type,
                     avals_type = avals_type,
                     geom_fac = x, ...)
+                rejs_dBH$maxq <- ifelse(
+                    length(rejs_dBH$initrejs) == 0, NA,
+                    max(qvals[rejs_dBH$initrejs] / alpha))
                 rejs_dBH_init <- list(rejs = rejs_dBH$initrejs)
                 obj <- c(obj, list(rejs_dBH, rejs_dBH_init))
             }
@@ -725,9 +777,12 @@ dBH_mcc_expr <- function(ng, nr,
                     type <- expr_params[j, 3]
                     if (is.na(x)){
                         avals_type <- "BH"
+                        avals <- 1:ng
                     } else {
                         avals_type <- "geom"
+                        avals <- geom_avals(x, ng)
                     }
+                    qvals <- qvals_BH_reshape(pvals, avals)
                     if (is.na(fac)){
                         gamma <- NULL
                     } else {
@@ -744,6 +799,9 @@ dBH_mcc_expr <- function(ng, nr,
                         tautype = type,
                         avals_type = avals_type,
                         geom_fac = x, ...)
+                    rejs_dBH2$maxq <- ifelse(
+                        length(rejs_dBH2$initrejs) == 0, NA,
+                        max(qvals[rejs_dBH2$initrejs] / alpha))
                     rejs_dBH2_init <- list(rejs = rejs_dBH2$initrejs)
                     obj <- c(obj, list(rejs_dBH2, rejs_dBH2_init))
                 }
@@ -757,6 +815,9 @@ dBH_mcc_expr <- function(ng, nr,
             inds <- seq(nBHBCkn + 1, length(methods), 2)
             results[[k]]$secBH[inds, i] <- sapply(obj[inds], function(output){
                 output$secBH
+            })
+            results[[k]]$qcap[inds, i] <- sapply(obj[inds], function(output){
+                output$maxq
             })
             setTxtProgressBar(pb, ((i-1)*nalphas + k)/(nreps*nalphas))
         }
@@ -772,16 +833,29 @@ postprocess <- function(res){
         FDR <- round(FDR, 4)
         power <- as.numeric(rowMeans(re$power))
         secBH <- as.numeric(rowMeans(re$secBH))
+        qmax <- as.numeric(apply(re$qcap, 1, function(x){
+            max(x, na.rm = TRUE)
+        }))
+        q99 <- as.numeric(apply(re$qcap, 1, function(x){
+            quantile(x, 0.99, na.rm = TRUE)
+        }))
+        q95 <- as.numeric(apply(re$qcap, 1, function(x){
+            quantile(x, 0.95, na.rm = TRUE)
+        }))
         methods <- rownames(re$power)
         df <- data.frame(method = methods,
                          FDR = FDR,
                          power = power,
                          secBH = secBH)
+        df_q <- data.frame(qmax = qmax,
+                           q99 = q99,
+                           q95 = q95)
         inds1 <- grep("^BH", methods)
         inds2 <- grep("^BC", methods)
         inds3 <- grep("^Knockoff", methods)
         inds <- c(inds1, inds2, inds3)
         df1 <- df[inds, ]
+        df1_q <- df_q[inds, ]
         df1[, 5:6] <- NA
         names(df1)[5:6] <- c("FDR (init)", "power (init)")
         df2 <- df[-inds, ]
@@ -790,11 +864,35 @@ postprocess <- function(res){
         df2_2 <- df2[seq(2, m, 2), ][, 2:3]
         names(df2_2) <- c("FDR (init)", "power (init)")
         df2 <- cbind(df2_1, df2_2)
+        df2_q <- df_q[-inds, ]
+        df2_q <- df2_q[seq(1, m, 2), ]
 
         df <- rbind(df1, df2)
         df <- df[, c(1, 2, 5, 3, 6, 4)]
         df$alpha <- re$alpha
-        return(df)
+        df_q <- rbind(df1_q, df2_q)
+        return(cbind(df, df_q))
     })
     do.call(rbind, summaryres)
+}
+
+
+aggregate_expr <- function(objlist, alphas){
+    res <- list()
+    for (k in 1:length(alphas)){
+        FDP <- do.call(cbind, lapply(objlist, function(x){
+            x[[k]]$FDP
+        }))
+        power <- do.call(cbind, lapply(objlist, function(x){
+            x[[k]]$power
+        }))
+        secBH <- do.call(cbind, lapply(objlist, function(x){
+            x[[k]]$secBH
+        }))
+        qcap <- do.call(cbind, lapply(objlist, function(x){
+            x[[k]]$qcap
+        }))
+        res[[k]] <- list(alpha = alphas[k], FDP = FDP, power = power, secBH = secBH, qcap = qcap)
+    }
+    return(res)
 }

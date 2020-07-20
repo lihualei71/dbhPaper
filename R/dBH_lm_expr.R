@@ -1,10 +1,8 @@
 #!/usr/bin/env Rscript
 
-source("dBH_lm.R")
 source("utils.R")
 source("BHcalib.R")
 source("expr_functions.R")
-library("knockoff")
 
 if (!interactive()){
     suppressPackageStartupMessages(library("argparse"))
@@ -41,7 +39,7 @@ if (!interactive()){
     mu_type <- 1
     nreps <- 5
     side <- "right"
-    skip_dBH2 <- TRUE
+    skip_dBH2 <- FALSE
     skip_knockoff <- FALSE
     seed <- 0
     Xseed <- 2020

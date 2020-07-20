@@ -4,7 +4,7 @@
 #SBATCH --output=../log/dbh_HIV.out
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --time=0-16:00:00
+#SBATCH --time=2-00:00:00
 
 ml R
 cd ../R/

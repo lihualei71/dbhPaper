@@ -65,6 +65,7 @@ for (i in 1:nrow(settings)){
                             value = c(0.05, 0.2, NA, NA))
     plot <- data %>%
         select(-`FDR (init)`, -`power (init)`, -secBH,
+               -qmax, -q99, -q95,
                -ng, -nr, -pi1, -side) %>%
         gather("type", "value", -method, -alpha, -color) %>%
         ggplot(aes(x = method, y = value,
