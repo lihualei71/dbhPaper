@@ -4,7 +4,7 @@ library("latex2exp")
 
 load("../data/HIV_discoveries.RData")
 
-methods_levels <- c("Knockoff_equi",
+methods_levels <- c("Knockoff_sdp",
                     "BH_full",
                     "dBH2_QC_full_0.9",                    
                     "dBH2_QC_full_safe")
